@@ -7,7 +7,10 @@ case "$1" in
     qwen)
         hf download Disty0/Qwen-Image-Edit-2511-SDNQ-uint4-svd-r32 --local-dir ./Models/Qwen
         ;;
+    joyai)
+        hf download jdopensource/JoyAI-Image-Edit-Diffusers --local-dir ./Models/JoyAi
+        ;;
     *)
-        echo "qwen | flux2"
+        echo "qwen | flux2 | joyai"
         ;;
 esac
