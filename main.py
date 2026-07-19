@@ -96,16 +96,15 @@ class Program(QtWidgets.QWidget):
             print("Missing image")
 
 def RunModelQwen(imagePath, prompt):
-    pipeline = QwenImageEditPlusPipeline.from_pretrained(
-        "./Models/QwenImageEdit",
+    pipe = QwenImageEditPlusPipeline.from_pretrained("./Models/Qwen",
         torch_dtype=torch.bfloat16,
-        local_files_only=True
-    )
+        local_files_only=True,
+        )
+    
+    torch.cuda.is_available()
+    pipe.enable_model_cpu_offload()
+    pipe.set_progress_bar_config(disable=None)
 
-    print("pipeline loaded")
-
-    pipeline.to('cuda')
-    pipeline.set_progress_bar_config(disable=None)
     image = Image.open(imagePath)
     inputs = {
         "image": image,
@@ -118,11 +117,9 @@ def RunModelQwen(imagePath, prompt):
         "num_images_per_prompt": 1,
     }
     with torch.inference_mode():
-        output = pipeline(**inputs)
-        output_image = output.images[0]
-        output_image.save("output_image_edit_plus.png")
-        print("image saved at", os.path.abspath("output_image_edit_plus.png"))
-
+        output = pipe(**inputs)
+        outputImage = output.images[0]
+        outputImage.save("output.png")
 
     print("done")
 
