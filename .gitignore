@@ -4,4 +4,4 @@ __pycache__/
 .env
 *.png
 *.jpg
-FLUX2/
+Models/

@@ -5,6 +5,10 @@ os.environ["HF_HUB_OFFLINE"] = "1"
 from diffusers import DiffusionPipeline
 from diffusers.utils import load_image
 
+from PIL import Image
+
+from diffusers import QwenImageEditPlusPipeline
+
 from PySide6 import QtCore, QtWidgets, QtGui
 
 
@@ -86,14 +90,45 @@ class Program(QtWidgets.QWidget):
     @QtCore.Slot()
     def HandleRunModelBtn(self):
         if self.currentImagePath:
-            RunModel(self.currentImagePath, self.prompt)
+            RunModelQwen(self.currentImagePath, self.prompt)
+            #RunModelFlux(self.currentImagePath, self.prompt)
         else:
             print("Missing image")
 
+def RunModelQwen(imagePath, prompt):
+    pipeline = QwenImageEditPlusPipeline.from_pretrained(
+        "./Models/QwenImageEdit",
+        torch_dtype=torch.bfloat16,
+        local_files_only=True
+    )
 
-def RunModel(imagePath, prompt):
+    print("pipeline loaded")
+
+    pipeline.to('cuda')
+    pipeline.set_progress_bar_config(disable=None)
+    image = Image.open(imagePath)
+    inputs = {
+        "image": image,
+        "prompt": prompt,
+        "generator": torch.manual_seed(0),
+        "true_cfg_scale": 4.0,
+        "negative_prompt": " ",
+        "num_inference_steps": 40,
+        "guidance_scale": 1.0,
+        "num_images_per_prompt": 1,
+    }
+    with torch.inference_mode():
+        output = pipeline(**inputs)
+        output_image = output.images[0]
+        output_image.save("output_image_edit_plus.png")
+        print("image saved at", os.path.abspath("output_image_edit_plus.png"))
+
+
+    print("done")
+
+def RunModelFlux(imagePath, prompt):
     pipe = DiffusionPipeline.from_pretrained(
-        "./FLUX2",
+        "./Models/FLUX2",
         torch_dtype=torch.bfloat16,
         local_files_only=True,
     )

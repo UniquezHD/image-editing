@@ -6,3 +6,5 @@ accelerate
 safetensors
 pillow
 PySide6
+huggingface_hub
+pip install git+https://github.com/huggingface/diffusers
