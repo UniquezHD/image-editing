@@ -5,3 +5,4 @@ diffusers
 accelerate
 safetensors
 pillow
+PySide6
