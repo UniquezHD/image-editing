@@ -8,6 +8,7 @@ from diffusers.utils import load_image
 from PIL import Image
 
 from diffusers import QwenImageEditPlusPipeline
+from diffusers import JoyImageEditPipeline
 
 from PySide6 import QtCore, QtWidgets, QtGui
 
@@ -90,7 +91,8 @@ class Program(QtWidgets.QWidget):
     @QtCore.Slot()
     def HandleRunModelBtn(self):
         if self.currentImagePath:
-            RunModelQwen(self.currentImagePath, self.prompt)
+            RunModelJoyai(self.currentImagePath, self.prompt)
+            #RunModelQwen(self.currentImagePath, self.prompt)
             #RunModelFlux(self.currentImagePath, self.prompt)
         else:
             print("Missing image")
@@ -122,6 +124,33 @@ def RunModelQwen(imagePath, prompt):
         outputImage.save("output.png")
 
     print("done")
+
+def RunModelJoyai(imagePath, prompt):
+    pipe = JoyImageEditPipeline.from_pretrained(
+        "./Models/JoyAi",
+        torch_dtype=torch.bfloat16,
+        local_files_only=True,
+    )
+
+    pipe.enable_model_cpu_offload()
+
+    inputs = {
+        "image": imagePath,
+        "prompt": prompt,
+        "generator": torch.manual_seed(0),
+        "num_inference_steps": 40,
+        "guidance_scale": 4.0,
+    }
+
+    print("run pipeline...")
+
+    with torch.inference_mode():
+        output = pipe(**inputs)
+        outputImage = output.images[0]
+        outputImage.save("output.png")
+        print("Done")
+
+
 
 def RunModelFlux(imagePath, prompt):
     pipe = DiffusionPipeline.from_pretrained(
